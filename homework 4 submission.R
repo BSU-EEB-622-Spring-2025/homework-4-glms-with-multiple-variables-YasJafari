@@ -79,6 +79,8 @@ AIC(hypo_glm, hypo_fit_nb)
 
 #The lower AIC for the negative binomial model suggest that it's a better fit than the glm.
 
+## ASW: both are glms, but just a difference in distribution choice
+
 #Now let's check for overdispersion:
 overdispersion_ratio_nb <- sum(residuals(hypo_fit_nb, type = "pearson")^2) / hypo_fit_nb$df.residual
 print(overdispersion_ratio_nb)
@@ -103,10 +105,13 @@ var(mistletoe$Seedlings)
 #is highly overdispersed, that being said, negative binomial model is still a good fit.
 #But adding more data to that (such as soil moisture) might improve the model.
 
+## ASW: yeah, I'd say its moderate fit, but the seedling values do range from 0 to >2000.
 
 #Now I plot the residuals to check if the model is under or over predicting:
 plot(resid(hypo_fit_nb, type = "pearson"), main="Residual Plot")
 abline(h=0, col="red", lwd=2)
+
+## ASW: we don't necessarily need these sort of residual plots for the poisson or nbin, unless it's just to explore! -- this is usually a linear regression diagnostic.
 
 
 #Use visual (e.g. a marginal effects plot):
@@ -143,10 +148,16 @@ ggplot(marginal_data, aes(x = x, y = predicted, ymin = conf.low, ymax = conf.hig
 #which could be due to the data variablity. However, error bars for the unparasitized
 #trees might be due to less diverse data,
 
+## ASW: it actually has to do with the link function -- values are more constrained as they approach zero.
+
+## ASW: Sentences to interpret the effects?
+
 
 #During the course of this study, 2012 was an atypically rainy year, compared to 2011. 
 #Fit an additional glm that quantifies how the effect of mistletoe differs between the two years in this study. 
 #Write ~2 new sentences that summarize the results of the new model and their biological implications.
+
+## ASW: This question might be better suited to an interaction between treatment and year.
 
 #Now let's include the Year:
 fit_nb <- glm.nb(Seedlings ~ Treatment + Year, data = mistletoe)
@@ -169,6 +180,8 @@ AIC(hypo_fit_nb, fit_nb)
 ##Based on the AIC values, 2079.3 (model-2) and AIC: 2094 (model-1), the lower AIC value for model-2, however
 #it's slightly lower, can suggest that model-2 with adding an extra layer (Year) is a better fit.
 
+## ASW: we haven't talked about comparing with AIC yet, and this tool is going to tell us about prediction, rather than the effects of interest. For now, you can just fit the model that best reflects the research interest above.
+
 
 ##Plot the model:
 interact_plot(fit_nb, pred = Year, modx = Treatment, plot.points = TRUE)
@@ -177,8 +190,9 @@ interact_plot(fit_nb, pred = Year, modx = Treatment, plot.points = TRUE)
 #under the parasitized trees. Maybe the higher moisture increased the infection rate and
 #therefore, the seedling counts went up too. 
 
+## ASW: The coefficients from the model above suggest something different -- the "Year" effect is the average change on the logged scale across unparasitized and parasitized trees.
 
-
+## 26/30
 
 #Question 2:
 #Questions 2 uses the “treemortality” dataset in this repository. 
@@ -227,6 +241,8 @@ summary(treesize_mode)
 #However after adding the tree size, thinning coef changes from - 1.8559to -1.89930 
 #which indicates that by including tree size the effect of thinning on tree mortality becomes a bit stronger.
 
+## ASW: The shift in the estimate for thinning is extremely small.  if they completely randomized thinning treatments in relationship to tree size, it will not bias the estimate of thinning's effect. You can see this dynamic in your models above, as the models estimate a coefficient for thinning of -1.9, regardless of whether tree size is included.
+
 
 
 #2c:Refit the model from 2a to include the necessary variables to minimize bias in the estimation of the “thinning” variable, based on the reviewer’s proposed DAG. 
@@ -243,12 +259,16 @@ summary(model_slope_roaddist)
 #slope has more significant impact on tree mortality compared to distance from roads. 
 #Also by adding the slope the impact of thinning on tree mortality becomes less biased.
 
+## ASW: The key thing here is that slope and distance from roads are biasing the effect of thinning in the first model, making it appear more effective than it is because of the fact that thinning treatments are more likely to occur in locations where fire severity is already lower (closer to roads, on shallower slopes). The predicted effect of thinning in the first model is a decrease in mortality from 73% to 29%, but in the second model, this effect decreases (Mortality decreases from 54% to 29%). Try to interpret scale of change on odds or prob scale. 
+
 #AIC:
 AIC(thinning_mortality,model_slope_roaddist)
 print(AIC)
 #Lower values for AIC suggest better fit model.
 #p-values for thinning, slope, and distance from road are significantly < 0.05
 #All in all, I conclude that slope and distance impact on increasing tree mortality.
+
+## ASW: the goal is to estimate the effect of thinning well, not necessarily to find the best predictive model (which is what we use AIC for)
 
 exp(coef(model_slope_roaddist))
 #Now with the value of 4.000076e-01 for thinning, it shows that 40% of thinned trees
@@ -257,6 +277,8 @@ exp(coef(model_slope_roaddist))
 #are 2.28 times more prone to die. 
 #With the value of 1.724060e+00 for distance from roads, it can be concluded that for
 #every 1K increase in distance from roads, tree mortality increases by 1.72 times.
+
+## ASW: See lecture 20 for interpretation of odds and predictions from a model with multiple variables.
 
 #Let's create a new DAG model:
 library(dagitty)
@@ -287,3 +309,10 @@ dag_model <- dagitty("dag {
   roaddist -> mortality
 }")
 plot(dag_model)
+
+## ASW: I love this! For the purposes of the example, I try to make it so that no one has to know anything abotu forests to do the question, but this is a great example of DAG thinking!
+
+## ASW: 15/20
+
+## ASW: total - 41/50 - nice work!
+ 
